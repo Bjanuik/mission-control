@@ -1,0 +1,21 @@
+name: fcc-server update monitor
+on:
+  schedule:
+    - cron: '0 9 * * *'
+  workflow_dispatch:
+jobs:
+  check_updates:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check fcc-server for new commits
+        run: |
+          LATEST=$(curl -s https://api.github.com/repos/Alishahryar1/free-claude-code/commits/main | jq -r '.sha')
+          echo "Latest fcc-server commit: $LATEST"
+          RECENT=$(curl -s "https://api.github.com/repos/Alishahryar1/free-claude-code/commits?per_page=5" | jq -r '.[].commit.message' | head -5)
+          echo "Recent commits:"
+          echo "$RECENT"
+      - name: Create summary issue if updates found
+        run: |
+          gh issue create             --title "fcc-server daily check $(date +%Y-%m-%d)"             --body "Check https://github.com/Alishahryar1/free-claude-code/commits/main for latest updates."             --repo $GITHUB_REPOSITORY || true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
