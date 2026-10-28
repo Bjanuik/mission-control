@@ -17,5 +17,9 @@ A local AI command centre running on Windows 10.
 - Daily open issues report (8:20 UTC)
 - fcc-server update monitor (9:00 UTC daily)
 
+Both workflows maintain reusable reports and skip unchanged information.
+See [reporting setup and recovery](docs/reporting.md) for behavior, restricted
+permissions, read-only previews, schedule activation, and validation.
+
 ## Setup
 See member-pack/install/ for full setup guides (30-day roadmap included).
