@@ -1,0 +1,22 @@
+name: Validate reporting
+on:
+  pull_request:
+    paths:
+      - '.github/**'
+      - 'tests/**'
+  push:
+    paths:
+      - '.github/**'
+      - 'tests/**'
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Test report lifecycle without network access or issue writes
+        run: node --test tests/reporting.test.cjs

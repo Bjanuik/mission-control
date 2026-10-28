@@ -3,19 +3,31 @@ on:
   schedule:
     - cron: '0 9 * * *'
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Preview without changing issues
+        type: boolean
+        default: true
+
+permissions: {}
+concurrency:
+  group: mission-control-reporting
+  cancel-in-progress: false
+
 jobs:
-  check_updates:
+  report:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: write
     steps:
-      - name: Check fcc-server for new commits
-        run: |
-          LATEST=$(curl -s https://api.github.com/repos/Alishahryar1/free-claude-code/commits/main | jq -r '.sha')
-          echo "Latest fcc-server commit: $LATEST"
-          RECENT=$(curl -s "https://api.github.com/repos/Alishahryar1/free-claude-code/commits?per_page=5" | jq -r '.[].commit.message' | head -5)
-          echo "Recent commits:"
-          echo "$RECENT"
-      - name: Create summary issue if updates found
-        run: |
-          gh issue create             --title "fcc-server daily check $(date +%Y-%m-%d)"             --body "Check https://github.com/Alishahryar1/free-claude-code/commits/main for latest updates."             --repo $GITHUB_REPOSITORY || true
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+        with:
+          script: |
+            await require('./.github/scripts/reporting.cjs').fccMonitor({github, context, core});
